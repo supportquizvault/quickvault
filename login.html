@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Quiz Vault</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        
+        .login-card { background: #ffffff; width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; }
+        .logo { font-size: 26px; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
+        .login-card h2 { font-size: 20px; color: #0f172a; margin-bottom: 8px; }
+        .login-card p { font-size: 14px; color: #64748b; margin-bottom: 25px; }
+
+        .btn-google { width: 100%; padding: 12px; background-color: #ffffff; color: #374151; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
+        .btn-google:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .btn-google img { width: 20px; height: 20px; }
+
+        .back-home { display: inline-block; margin-top: 20px; font-size: 13px; color: #2563eb; text-decoration: none; font-weight: 600; }
+        .back-home:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo">🔐 Quiz Vault</div>
+        <h2>Welcome Back</h2>
+        <p>Login with Google to access your purchased PDFs and quizzes.</p>
+
+        <!-- Google Login Button -->
+        <button class="btn-google" id="googleLoginBtn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+            Sign in with Google
+        </button>
+
+        <br>
+        <a href="index.html" class="back-home">← Back to Homepage</a>
+    </div>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Aapki Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKThjP8KihJsLdqMN8LbG2TOIVzRFaZLQ",
+            authDomain: "quizvault-2380c.firebaseapp.com",
+            projectId: "quizvault-2380c",
+            storageBucket: "quizvault-2380c.firebasestorage.app",
+            messagingSenderId: "41706191360",
+            appId: "1:41706191360:web:d6a7178baae8d51e0eb6e5",
+            measurementId: "G-CVNQY2QJPQ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Google Sign In Function
+        document.getElementById('googleLoginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    
+                    // Logged in user details local storage mein save hongi
+                    localStorage.setItem("userEmail", user.email);
+                    localStorage.setItem("userName", user.displayName);
+
+                    alert("Login Successful! Welcome, " + user.displayName);
+
+                    // Homepage par redirect
+                    window.location.href = "index.html";
+                })
+                .catch((error) => {
+                    console.error("Login Error:", error);
+                    alert("Login Failed: " + error.message);
+                });
+        });
+    </script>
+</body>
+</html>
