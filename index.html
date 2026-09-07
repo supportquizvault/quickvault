@@ -11,7 +11,7 @@
         /* Header */
         header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
         .logo { font-size: 22px; font-weight: bold; color: #2563eb; display: flex; align-items: center; gap: 8px; }
-        .btn-login { padding: 8px 16px; background-color: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-login { padding: 8px 16px; background-color: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
         
         /* Hero Section */
         .hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
@@ -48,7 +48,7 @@
     <!-- Header -->
     <header>
         <div class="logo">🔐 Quiz Vault</div>
-        <button class="btn-login" onclick="alert('Login feature coming soon!')">Login</button>
+        <a href="login.html" class="btn-login">Login</a>
     </header>
 
     <!-- Hero Section -->
@@ -64,7 +64,7 @@
     <!-- Main Content -->
     <main>
         <h2>Available Quizzes & PDFs</h2>
-        <div class="grid">
+        <div class="grid" id="pdfGrid">
             
             <!-- Card 1 -->
             <div class="card">
@@ -99,7 +99,7 @@
     <!-- Payment / Unlock Modal -->
     <div class="modal" id="passcodeModal">
         <div class="modal-content">
-            <h3>🎉 Payment Successful!</h3>
+            <h3>🎉 Access Granted!</h3>
             <p id="unlockedTitle" style="margin-top: 10px; font-size: 14px; color: #475569;"></p>
             <p style="margin-top: 15px; font-size: 13px;">Your Vault Access Passcode:</p>
             <div class="passcode" id="passcodeCode">849201</div>
@@ -108,28 +108,130 @@
     </div>
 
     <script>
+        // Store current opening file data
+        let activePdfData = null;
+
+        // IndexedDB Database Access
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open("QuizVaultDB", 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("pdfFiles")) {
+                        db.createObjectStore("pdfFiles", { keyPath: "id", autoIncrement: true });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        // Automatic Load Custom PDFs uploaded from Admin Panel
+        async function loadAdminUploadedPDFs() {
+            try {
+                const grid = document.getElementById("pdfGrid");
+                const db = await openDB();
+                const tx = db.transaction("pdfFiles", "readonly");
+                const store = tx.objectStore("pdfFiles");
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const customFiles = request.result;
+                    
+                    customFiles.forEach(pdf => {
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        card.innerHTML = `
+                            <div class="pdf-icon">📄 ${pdf.title.substring(0, 15)}...</div>
+                            <h3>${pdf.title}</h3>
+                            <p>${pdf.desc}</p>
+                            <div class="price ${pdf.isFree ? 'free-tag' : ''}">${pdf.isFree ? 'FREE' : 'Price: ₹' + pdf.price}</div>
+                            <button class="btn-unlock" id="btn-custom-${pdf.id}" onclick="unlockCustomPDF(${pdf.id}, '${pdf.title}', ${pdf.price})">
+                                ${pdf.isFree ? 'Unlock Free' : 'Pay ₹' + pdf.price + ' to Unlock'}
+                            </button>
+                        `;
+                        // Naye uploaded PDFs ko sabse top par dikhayenge
+                        grid.prepend(card);
+                    });
+                };
+            } catch (err) {
+                console.log("No custom admin files found yet.", err);
+            }
+        }
+
+        // Static Default PDFs Unlock Handler
         function unlockPDF(id, title, price) {
             const btn = document.getElementById('btn-' + id);
-            
+            activePdfData = null; // Default static file
+
             if (price === 0) {
                 alert('🎉 Congratulations! "' + title + '" has been unlocked for FREE.');
-                btn.className = 'btn-read';
-                btn.innerText = '📖 Open / Read File';
             } else {
-                // Generate Random 6-digit passcode
                 const randomPasscode = Math.floor(100000 + Math.random() * 900000);
                 document.getElementById('unlockedTitle').innerText = title;
                 document.getElementById('passcodeCode').innerText = randomPasscode;
                 document.getElementById('passcodeModal').style.display = 'flex';
-                
+            }
+            btn.className = 'btn-read';
+            btn.innerText = '📖 Open / Read File';
+        }
+
+        // Admin Uploaded Custom PDFs Unlock Handler
+        async function unlockCustomPDF(id, title, price) {
+            const btn = document.getElementById('btn-custom-' + id);
+            const db = await openDB();
+            const tx = db.transaction("pdfFiles", "readonly");
+            const store = tx.objectStore("pdfFiles");
+            const request = store.get(id);
+
+            request.onsuccess = () => {
+                const pdf = request.result;
+                if (!pdf) return;
+
+                activePdfData = pdf.fileData;
+
+                if (price === 0) {
+                    alert('🎉 Congratulations! "' + title + '" has been unlocked for FREE.');
+                    openPDFInNewTab(pdf.fileData);
+                } else {
+                    const randomPasscode = Math.floor(100000 + Math.random() * 900000);
+                    document.getElementById('unlockedTitle').innerText = title;
+                    document.getElementById('passcodeCode').innerText = randomPasscode;
+                    document.getElementById('passcodeModal').style.display = 'flex';
+                }
+
                 btn.className = 'btn-read';
                 btn.innerText = '📖 Open / Read File';
+                btn.onclick = () => openPDFInNewTab(pdf.fileData);
+            };
+        }
+
+        // Base64 PDF View in New Tab
+        function openPDFInNewTab(base64Data) {
+            if (!base64Data) return;
+            const blob = dataURLtoBlob(base64Data);
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        }
+
+        function dataURLtoBlob(dataurl) {
+            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
             }
+            return new Blob([u8arr], {type:mime});
         }
 
         function closeModal() {
             document.getElementById('passcodeModal').style.display = 'none';
+            if (activePdfData) {
+                openPDFInNewTab(activePdfData);
+            }
         }
+
+        // Page load hote hi custom uploaded PDFs automatically load hongi
+        window.addEventListener("DOMContentLoaded", loadAdminUploadedPDFs);
     </script>
 </body>
 </html>
