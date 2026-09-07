@@ -14,6 +14,7 @@
         .header-btns { display: flex; gap: 10px; align-items: center; }
         .btn-my-pdfs { padding: 8px 16px; background-color: #16a34a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
         .btn-login { padding: 8px 16px; background-color: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
+        .btn-admin { padding: 8px 16px; background-color: #0f172a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: none; }
         
         /* Hero Section */
         .hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
@@ -69,7 +70,8 @@
         <div class="logo">🔐 Quiz Vault</div>
         <div class="header-btns">
             <a href="#myPdfsSection" class="btn-my-pdfs">📚 My PDFs</a>
-            <a href="admin.html" class="btn-login">Admin Panel</a>
+            <a href="login.html" id="loginBtn" class="btn-login">Login</a>
+            <a href="admin.html" id="adminPanelLink" class="btn-admin">Admin Panel ⚙️</a>
         </div>
     </header>
 
@@ -128,13 +130,39 @@
 
     <!-- Footer -->
     <footer>
-        <p>© 2026 Quiz Vault. All rights reserved. | <a href="admin.html">Admin Panel ⚙️</a></p>
+        <p>© 2026 Quiz Vault. All rights reserved. <span id="footerAdminContainer" style="display: none;">| <a href="admin.html">Admin Panel ⚙️</a></span></p>
     </footer>
 
     <script>
+        const ADMIN_EMAIL = "support.quizvault@gmail.com";
         let allUploadedFiles = [];
 
-        // IndexedDB Database Connection
+        // Check Logged In User for Admin Rights
+        function checkAdminVisibility() {
+            const userEmail = localStorage.getItem("userEmail");
+            const adminLink = document.getElementById("adminPanelLink");
+            const footerAdmin = document.getElementById("footerAdminContainer");
+            const loginBtn = document.getElementById("loginBtn");
+
+            if (userEmail) {
+                loginBtn.innerText = "Logout (" + userEmail.split('@')[0] + ")";
+                loginBtn.href = "#";
+                loginBtn.onclick = () => {
+                    localStorage.removeItem("userEmail");
+                    window.location.reload();
+                };
+            }
+
+            if (userEmail && userEmail.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                adminLink.style.display = "inline-block";
+                footerAdmin.style.display = "inline";
+            } else {
+                adminLink.style.display = "none";
+                footerAdmin.style.display = "none";
+            }
+        }
+
+        // IndexedDB Connection
         function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("QuizVaultDB", 1);
@@ -175,7 +203,7 @@
             grid.innerHTML = "";
 
             if (!files || files.length === 0) {
-                grid.innerHTML = `<p class="empty-msg">Abhi tak koi PDF upload nahi ki gayi hai. Kripya Admin Panel se upload karein.</p>`;
+                grid.innerHTML = `<p class="empty-msg">Abhi tak koi PDF upload nahi ki gayi hai.</p>`;
                 return;
             }
 
@@ -203,7 +231,7 @@
             });
         }
 
-        // Handle Purchase Action
+        // Purchase Action
         async function buyPDF(id) {
             const db = await openDB();
             const tx = db.transaction("pdfFiles", "readonly");
@@ -214,14 +242,12 @@
                 const pdf = request.result;
                 if (!pdf) return;
 
-                // Save to local purchased list
                 let purchased = getPurchasedIds();
                 if (!purchased.includes(id)) {
                     purchased.push(id);
                     localStorage.setItem("myPurchasedPdfs", JSON.stringify(purchased));
                 }
 
-                // Show Success Message Popup
                 document.getElementById('successMsg').innerText = `Aapne "${pdf.title}" ka purchase complete kar liya hai!`;
                 document.getElementById('successModal').style.display = 'flex';
 
@@ -230,13 +256,8 @@
             };
         }
 
-        // Get Purchased PDF IDs from LocalStorage
         function getPurchasedIds() {
-            try {
-                return JSON.parse(localStorage.getItem("myPurchasedPdfs")) || [];
-            } catch(e) {
-                return [];
-            }
+            try { return JSON.parse(localStorage.getItem("myPurchasedPdfs")) || []; } catch(e) { return []; }
         }
 
         // Render My PDFs Panel
@@ -254,14 +275,11 @@
             const store = tx.objectStore("pdfFiles");
 
             listContainer.innerHTML = "";
-            let foundCount = 0;
-
             purchasedIds.forEach(id => {
                 const req = store.get(id);
                 req.onsuccess = () => {
                     const pdf = req.result;
                     if (pdf) {
-                        foundCount++;
                         const item = document.createElement("div");
                         item.className = "my-pdf-item";
                         item.innerHTML = `
@@ -277,7 +295,6 @@
             });
         }
 
-        // Open Manage Details Modal
         async function openManageModal(id) {
             const db = await openDB();
             const tx = db.transaction("pdfFiles", "readonly");
@@ -292,32 +309,25 @@
                 document.getElementById("manageDesc").innerText = pdf.desc;
                 document.getElementById("managePassword").innerText = pdf.pdfPassword ? pdf.pdfPassword : "No Password Required";
 
-                // Open Button
                 document.getElementById("btnViewPdf").onclick = () => openPDFInNewTab(pdf.fileData);
 
-                // Download Button
                 const downloadBtn = document.getElementById("btnDownloadPdf");
                 downloadBtn.href = pdf.fileData;
-                downloadBtn.download = `${pdf.title.replace(/[^a-zA-Z0-0]/g, "_")}.pdf`;
+                downloadBtn.download = `${pdf.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
 
                 document.getElementById("manageModal").style.display = "flex";
             };
         }
 
-        // Scroll to My PDFs Section
         function scrollToMyPdfs() {
             document.getElementById("myPdfsSection").scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Close Modals
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
-            if (modalId === 'successModal') {
-                scrollToMyPdfs();
-            }
+            if (modalId === 'successModal') scrollToMyPdfs();
         }
 
-        // Filter PDFs
         function filterPDFs() {
             const query = document.getElementById("searchInput").value.toLowerCase();
             const filtered = allUploadedFiles.filter(pdf => 
@@ -326,7 +336,6 @@
             renderPDFCards(filtered);
         }
 
-        // Open PDF in New Tab
         function openPDFInNewTab(base64Data) {
             if (!base64Data) return;
             const blob = dataURLtoBlob(base64Data);
@@ -337,13 +346,14 @@
         function dataURLtoBlob(dataurl) {
             let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                 bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
+            while(n--){ u8arr[n] = bstr.charCodeAt(n); }
             return new Blob([u8arr], {type:mime});
         }
 
-        window.addEventListener("DOMContentLoaded", loadAdminUploadedPDFs);
+        window.addEventListener("DOMContentLoaded", () => {
+            checkAdminVisibility();
+            loadAdminUploadedPDFs();
+        });
     </script>
 </body>
 </html>
