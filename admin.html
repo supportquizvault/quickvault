@@ -27,14 +27,18 @@
 </head>
 <body>
 
+    <!-- 🔒 Username & Password Protection Screen -->
     <div id="loginBox">
         <h2>🔒 Admin Login</h2>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Enter Admin Credentials</p>
-        <input type="text" id="adminUser" placeholder="Enter Username">
-        <input type="password" id="adminPass" placeholder="Enter Password">
-        <button onclick="checkCredentials()">Login to Admin</button>
+        <form onsubmit="checkCredentials(event)">
+            <input type="text" id="adminUser" placeholder="Enter Username" required autocomplete="off">
+            <input type="password" id="adminPass" placeholder="Enter Password" required autocomplete="off">
+            <button type="submit">Login to Admin</button>
+        </form>
     </div>
 
+    <!-- ⚙️ Admin Content (Hidden by default) -->
     <div id="adminContent">
         <h1>⚙️ Upload New PDF / Quiz</h1>
         <form id="uploadForm">
@@ -69,6 +73,104 @@
         const SECRET_PASSWORD = "Aandher1*@";
 
         // Login Check Function
-        function checkCredentials() {
-            const inputUser = document.getElementById("adminUser").value;
-            const inputPass = document.getElementById("admin
+        function checkCredentials(event) {
+            if(event) event.preventDefault();
+            
+            const inputUser = document.getElementById("adminUser").value.trim();
+            const inputPass = document.getElementById("adminPass").value.trim();
+
+            if (inputUser === SECRET_USERNAME && inputPass === SECRET_PASSWORD) {
+                try {
+                    sessionStorage.setItem("adminLoggedIn", "true");
+                } catch(e) {
+                    console.log("Storage access error:", e);
+                }
+                showAdminPanel();
+            } else {
+                alert("❌ Wrong Username or Password! Access Denied.");
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("adminContent").style.display = "block";
+        }
+
+        function logout() {
+            try {
+                sessionStorage.removeItem("adminLoggedIn");
+            } catch(e) {}
+            location.reload();
+        }
+
+        // Price Input Hide/Show
+        function togglePriceInput(checkbox) {
+            const priceGroup = document.getElementById("priceGroup");
+            if (checkbox.checked) {
+                priceGroup.style.display = "none";
+            } else {
+                priceGroup.style.display = "block";
+            }
+        }
+
+        // Auto Check Login Status on Page Load
+        window.onload = function() {
+            try {
+                if (sessionStorage.getItem("adminLoggedIn") === "true") {
+                    showAdminPanel();
+                }
+            } catch(e) {}
+        };
+
+        // IndexedDB Access for Saving Files
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open("QuizVaultDB", 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("pdfFiles")) {
+                        db.createObjectStore("pdfFiles", { keyPath: "id", autoIncrement: true });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        // Save Form Data & Upload File
+        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById("pdfTitle").value;
+            const desc = document.getElementById("pdfDesc").value;
+            const isFree = document.getElementById("isFree").checked;
+            const price = isFree ? 0 : document.getElementById("pdfPrice").value;
+            const fileInput = document.getElementById("pdfFile").files[0];
+
+            if (!fileInput) return alert("Please select a PDF file.");
+
+            const reader = new FileReader();
+            reader.readAsDataURL(fileInput);
+            reader.onload = async function() {
+                const base64File = reader.result;
+                const db = await openDB();
+                const tx = db.transaction("pdfFiles", "readwrite");
+                const store = tx.objectStore("pdfFiles");
+
+                store.add({
+                    title: title,
+                    desc: desc,
+                    isFree: isFree,
+                    price: price,
+                    fileData: base64File
+                });
+
+                tx.oncomplete = () => {
+                    alert("🎉 PDF Uploaded Successfully! Check your homepage.");
+                    document.getElementById("uploadForm").reset();
+                };
+            };
+        });
+    </script>
+</body>
+</html>
