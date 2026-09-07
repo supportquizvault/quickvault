@@ -40,6 +40,7 @@
 
         .back-home { display: inline-block; margin-top: 20px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 600; }
         .back-home:hover { text-decoration: underline; }
+        .status-msg { font-size: 12px; color: #16a34a; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -65,6 +66,8 @@
                     Sign in with Google
                 </button>
 
+                <div id="statusMsg" class="status-msg"></div>
+
                 <a href="index.html" class="back-home">← Back to Home</a>
             </div>
         </div>
@@ -73,7 +76,7 @@
     <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAKThjP8KihJsLdqMN8LbG2TOIVzRFaZLQ",
@@ -89,31 +92,40 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // Notebook Opening Animation Event
         const wrapper = document.getElementById('notebookWrapper');
         const cover = document.getElementById('coverBtn');
+        const statusMsg = document.getElementById('statusMsg');
 
+        // Cover Click to Open
         cover.addEventListener('click', (e) => {
             e.preventDefault();
             wrapper.classList.add('open');
         });
 
-        // Google Sign In Function
-        document.getElementById('googleLoginBtn').addEventListener('click', (e) => {
-            e.preventDefault(); // Page refresh hone se rokta hai
-            
-            signInWithPopup(auth, provider)
-                .then((result) => {
+        // 1. Google se redirect hone ke baad result check karna
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result && result.user) {
                     const user = result.user;
                     localStorage.setItem("userEmail", user.email);
                     localStorage.setItem("userName", user.displayName);
-                    alert("Login Successful! Welcome, " + user.displayName);
-                    window.location.href = "index.html";
-                })
-                .catch((error) => {
-                    console.error("Login Error:", error);
-                    alert("Login Error: " + error.message);
-                });
+                    
+                    statusMsg.innerText = "Login Successful! Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect Login Error:", error);
+                alert("Login Failed: " + error.message);
+            });
+
+        // 2. Google Login Button Click Action
+        document.getElementById('googleLoginBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            statusMsg.innerText = "Connecting to Google...";
+            signInWithRedirect(auth, provider);
         });
     </script>
 </body>
