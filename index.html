@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+
+export default function PromoHivePDFApp() {
+  // Mock State for PDFs and User Status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasFreeCredit, setHasFreeCredit] = useState(true);
+  const [unlockedPDFs, setUnlockedPDFs] = useState([]);
+  const [passcodeModal, setPasscodeModal] = useState(null);
+
+  const pdfList = [
+    { id: 1, title: 'Class 10 Science Chapter 1 Quiz', pages: 12, price: 0, isFree: true },
+    { id: 2, title: 'Class 10 Mathematics Formula Sheet', pages: 25, price: 10, isFree: false },
+    { id: 3, title: 'Digital Marketing & Ads Playbook', pages: 45, price: 5, isFree: false },
+  ];
+
+  const handleUnlock = (pdf) => {
+    if (pdf.isFree || (hasFreeCredit && unlockedPDFs.length === 0)) {
+      setUnlockedPDFs([...unlockedPDFs, pdf.id]);
+      setHasFreeCredit(false);
+      alert(`🎉 Congratulations! "${pdf.title}" is unlocked for FREE.`);
+    } else {
+      // Simulate Payment Process
+      const generatedPasscode = Math.floor(100000 + Math.random() * 900000);
+      setPasscodeModal({ title: pdf.title, code: generatedPasscode, price: pdf.price });
+      setUnlockedPDFs([...unlockedPDFs, pdf.id]);
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* 1. HEADER / NAVBAR */}
+      <header style={styles.header}>
+        <div style={styles.logo}>🚀 PromoHive PDFs</div>
+        <nav>
+          <button style={styles.navBtn} onClick={() => setIsLoggedIn(!isLoggedIn)}>
+            {isLoggedIn ? '👤 My Account' : '🔑 Login / Signup'}
+          </button>
+        </nav>
+      </header>
+
+      {/* 2. HERO SECTION */}
+      <section style={styles.hero}>
+        <h1>Access Premium Practice PDFs & Quizzes</h1>
+        <p>Get your 1st PDF completely <strong>FREE</strong>. Unlock future PDFs starting at just ₹5!</p>
+        <div style={styles.searchBox}>
+          <input type="text" placeholder="Search Quiz, Notes, or Guides..." style={styles.input} />
+          <button style={styles.searchBtn}>Search</button>
+        </div>
+      </section>
+
+      {/* 3. PDF LISTING GRID */}
+      <main style={styles.main}>
+        <h2 style={{ marginBottom: '20px' }}>Available PDF Files</h2>
+        <div style={styles.grid}>
+          {pdfList.map((pdf) => {
+            const isUnlocked = unlockedPDFs.includes(pdf.id);
+            return (
+              <div key={pdf.id} style={styles.card}>
+                <div style={styles.pdfThumbnail}>
+                  📄 {pdf.title.split(' ')[0]} PDF
+                </div>
+                <h3>{pdf.title}</h3>
+                <p style={{ color: '#666', fontSize: '14px' }}>Pages: {pdf.pages} Pages</p>
+                <div style={styles.priceTag}>
+                  {pdf.isFree ? <span style={{ color: 'green' }}>FREE</span> : `Price: ₹${pdf.price}`}
+                </div>
+
+                <button
+                  style={isUnlocked ? styles.readBtn : styles.unlockBtn}
+                  onClick={() => handleUnlock(pdf)}
+                >
+                  {isUnlocked ? '📖 Open / Read PDF' : pdf.isFree ? '🔓 Unlock Free' : `💳 Pay ₹${pdf.price} to Unlock`}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* 4. PASSCODE & PAYMENT SUCCESS MODAL */}
+      {passcodeModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3>✅ Payment Successful!</h3>
+            <p>You unlocked: <strong>{passcodeModal.title}</strong></p>
+            <div style={styles.passcodeBox}>
+              <span>Your PDF Access Passcode:</span>
+              <h1 style={{ color: '#2563eb', margin: '10px 0' }}>{passcodeModal.code}</h1>
+            </div>
+            <button style={styles.closeBtn} onClick={() => setPasscodeModal(null)}>
+              Close & View PDF
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// STYLES (Inline CSS for Instant Test/Production-ready layout)
+const styles = {
+  container: { fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh', margin: 0 },
+  header: { display: 'flex', justifyContent: 'space-between', padding: '15px 50px', backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0' },
+  logo: { fontSize: '20px', fontWeight: 'bold', color: '#1e293b' },
+  navBtn: { padding: '8px 16px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  hero: { textAlign: 'center', padding: '50px 20px', backgroundColor: '#eff6ff' },
+  searchBox: { marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' },
+  input: { padding: '10px', width: '300px', borderRadius: '6px', border: '1px solid #cbd5e1' },
+  searchBtn: { padding: '10px 20px', backgroundColor: '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  main: { padding: '40px 50px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' },
+  card: { backgroundColor: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' },
+  pdfThumbnail: { height: '120px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', marginBottom: '15px', fontWeight: 'bold' },
+  priceTag: { margin: '15px 0', fontWeight: 'bold' },
+  unlockBtn: { width: '100%', padding: '10px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  readBtn: { width: '100%', padding: '10px', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  modal: { backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', maxWidth: '400px', width: '100%' },
+  passcodeBox: { backgroundColor: '#f1f5f9', padding: '15px', borderRadius: '8px', margin: '20px 0' },
+  closeBtn: { padding: '10px 20px', backgroundColor: '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }
+};
