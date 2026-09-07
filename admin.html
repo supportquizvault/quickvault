@@ -8,13 +8,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f8fafc; color: #1e293b; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* Lock Screen */
         #loginBox { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
         #loginBox h2 { margin-bottom: 15px; color: #2563eb; }
         #loginBox input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; outline: none; font-size: 15px; }
         #loginBox button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
         
-        /* Main Admin Panel */
         #adminContent { display: none; width: 100%; max-width: 500px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { margin-bottom: 20px; color: #0f172a; text-align: center; font-size: 22px; }
         .form-group { margin-bottom: 15px; }
@@ -27,7 +25,7 @@
 </head>
 <body>
 
-    <!-- 🔒 Username & Password Protection Screen -->
+    <!-- 🔒 Admin Login Screen -->
     <div id="loginBox">
         <h2>🔒 Admin Login</h2>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Enter Admin Credentials</p>
@@ -38,17 +36,17 @@
         </form>
     </div>
 
-    <!-- ⚙️ Admin Content (Hidden by default) -->
+    <!-- ⚙️ Admin Content -->
     <div id="adminContent">
         <h1>⚙️ Upload New PDF / Quiz</h1>
         <form id="uploadForm">
             <div class="form-group">
                 <label>PDF Title</label>
-                <input type="text" id="pdfTitle" placeholder="e.g. Class 10 Science Notes" required>
+                <input type="text" id="pdfTitle" placeholder="e.g. SSC CGL Reasoning: Blood Relation" required>
             </div>
             <div class="form-group">
                 <label>Description</label>
-                <textarea id="pdfDesc" rows="3" placeholder="e.g. 15 Pages • Hand written notes" required></textarea>
+                <textarea id="pdfDesc" rows="3" placeholder="Description details..." required></textarea>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="isFree" onchange="togglePriceInput(this)">
@@ -58,6 +56,14 @@
                 <label>Price (₹)</label>
                 <input type="number" id="pdfPrice" placeholder="5" value="5">
             </div>
+            
+            <!-- 🔑 PDF Password Field -->
+            <div class="form-group">
+                <label>PDF Unlock Password (Optional)</label>
+                <input type="text" id="pdfPassword" placeholder="e.g. CGL2026 or 12345">
+                <small style="color: #64748b; font-size: 11px;">Payment karne ke baad customer ko yeh password dikhaya jayega.</small>
+            </div>
+
             <div class="form-group">
                 <label>Select PDF File</label>
                 <input type="file" id="pdfFile" accept="application/pdf" required>
@@ -68,26 +74,19 @@
     </div>
 
     <script>
-        // 🔑 Credentials
         const SECRET_USERNAME = "Aandher1*@123";
         const SECRET_PASSWORD = "Aandher1*@";
 
-        // Login Check Function
         function checkCredentials(event) {
             if(event) event.preventDefault();
-            
             const inputUser = document.getElementById("adminUser").value.trim();
             const inputPass = document.getElementById("adminPass").value.trim();
 
             if (inputUser === SECRET_USERNAME && inputPass === SECRET_PASSWORD) {
-                try {
-                    sessionStorage.setItem("adminLoggedIn", "true");
-                } catch(e) {
-                    console.log("Storage access error:", e);
-                }
+                try { sessionStorage.setItem("adminLoggedIn", "true"); } catch(e) {}
                 showAdminPanel();
             } else {
-                alert("❌ Wrong Username or Password! Access Denied.");
+                alert("❌ Wrong Username or Password!");
             }
         }
 
@@ -97,32 +96,20 @@
         }
 
         function logout() {
-            try {
-                sessionStorage.removeItem("adminLoggedIn");
-            } catch(e) {}
+            try { sessionStorage.removeItem("adminLoggedIn"); } catch(e) {}
             location.reload();
         }
 
-        // Price Input Hide/Show
         function togglePriceInput(checkbox) {
-            const priceGroup = document.getElementById("priceGroup");
-            if (checkbox.checked) {
-                priceGroup.style.display = "none";
-            } else {
-                priceGroup.style.display = "block";
-            }
+            document.getElementById("priceGroup").style.display = checkbox.checked ? "none" : "block";
         }
 
-        // Auto Check Login Status on Page Load
         window.onload = function() {
             try {
-                if (sessionStorage.getItem("adminLoggedIn") === "true") {
-                    showAdminPanel();
-                }
+                if (sessionStorage.getItem("adminLoggedIn") === "true") showAdminPanel();
             } catch(e) {}
         };
 
-        // IndexedDB Access for Saving Files
         function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("QuizVaultDB", 1);
@@ -137,7 +124,6 @@
             });
         }
 
-        // Save Form Data & Upload File
         document.getElementById("uploadForm").addEventListener("submit", async function(e) {
             e.preventDefault();
             
@@ -145,6 +131,7 @@
             const desc = document.getElementById("pdfDesc").value;
             const isFree = document.getElementById("isFree").checked;
             const price = isFree ? 0 : document.getElementById("pdfPrice").value;
+            const pdfPass = document.getElementById("pdfPassword").value.trim();
             const fileInput = document.getElementById("pdfFile").files[0];
 
             if (!fileInput) return alert("Please select a PDF file.");
@@ -162,11 +149,12 @@
                     desc: desc,
                     isFree: isFree,
                     price: price,
+                    pdfPassword: pdfPass, // Password database me save ho jayega
                     fileData: base64File
                 });
 
                 tx.oncomplete = () => {
-                    alert("🎉 PDF Uploaded Successfully! Check your homepage.");
+                    alert("🎉 PDF Uploaded Successfully!");
                     document.getElementById("uploadForm").reset();
                 };
             };
