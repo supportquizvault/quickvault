@@ -11,6 +11,8 @@
         /* Header */
         header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
         .logo { font-size: 22px; font-weight: bold; color: #2563eb; display: flex; align-items: center; gap: 8px; }
+        .header-btns { display: flex; gap: 10px; align-items: center; }
+        .btn-my-pdfs { padding: 8px 16px; background-color: #16a34a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
         .btn-login { padding: 8px 16px; background-color: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
         
         /* Hero Section */
@@ -23,7 +25,7 @@
         
         /* Main Section */
         main { padding: 30px 5%; flex: 1; }
-        h2 { margin-bottom: 20px; font-size: 20px; text-align: center; }
+        h2 { margin-bottom: 20px; font-size: 20px; text-align: center; color: #0f172a; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
         
         /* Card */
@@ -34,16 +36,25 @@
         .price { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
         .free-tag { color: #16a34a; }
         .btn-unlock { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-read { width: 100%; padding: 10px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-purchased { width: 100%; padding: 10px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+        /* My PDFs Section */
+        .my-pdfs-section { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 25px; margin-top: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .my-pdfs-section h2 { border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; color: #16a34a; }
+        .my-pdf-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .my-pdf-info h4 { color: #0f172a; font-size: 15px; }
+        .my-pdf-info p { color: #64748b; font-size: 12px; }
+        .btn-manage { padding: 8px 14px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 20px; z-index: 999; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; text-align: center; max-width: 350px; width: 100%; }
-        .passcode { font-size: 22px; font-weight: bold; color: #2563eb; letter-spacing: 1px; margin: 15px 0; background: #f1f5f9; padding: 10px; border-radius: 6px; word-break: break-all; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; text-align: center; max-width: 400px; width: 100%; }
+        .passcode-box { font-size: 18px; font-weight: bold; color: #15803d; margin: 15px 0; background: #dcfce7; padding: 12px; border-radius: 8px; word-break: break-all; }
         .btn-close { padding: 10px 20px; background: #0f172a; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: bold; width: 100%; }
+        .btn-download { padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: bold; width: 100%; display: block; text-decoration: none; text-align: center; }
 
         /* Empty Message */
-        .empty-msg { grid-column: 1 / -1; text-align: center; color: #64748b; font-size: 15px; padding: 40px 0; }
+        .empty-msg { grid-column: 1 / -1; text-align: center; color: #64748b; font-size: 15px; padding: 20px 0; }
 
         /* Footer Section */
         footer { text-align: center; padding: 20px; background: #ffffff; border-top: 1px solid #e2e8f0; margin-top: 40px; font-size: 13px; color: #64748b; }
@@ -56,7 +67,10 @@
     <!-- Header -->
     <header>
         <div class="logo">🔐 Quiz Vault</div>
-        <a href="admin.html" class="btn-login">Admin Login</a>
+        <div class="header-btns">
+            <a href="#myPdfsSection" class="btn-my-pdfs">📚 My PDFs</a>
+            <a href="admin.html" class="btn-login">Admin Panel</a>
+        </div>
     </header>
 
     <!-- Hero Section -->
@@ -75,16 +89,40 @@
         <div class="grid" id="pdfGrid">
             <p class="empty-msg">PDFs load ho rahi hain...</p>
         </div>
+
+        <!-- My PDFs Section -->
+        <div class="my-pdfs-section" id="myPdfsSection">
+            <h2>📚 My Purchased / Unlocked PDFs</h2>
+            <div id="myPdfList" style="margin-top: 15px;">
+                <p class="empty-msg">Aapne abhi tak koi PDF unlock nahi ki hai.</p>
+            </div>
+        </div>
     </main>
 
-    <!-- Unlock Modal -->
-    <div class="modal" id="passcodeModal">
+    <!-- Success Confirmation Modal -->
+    <div class="modal" id="successModal">
         <div class="modal-content">
-            <h3>🎉 Access Granted!</h3>
-            <p id="unlockedTitle" style="margin-top: 10px; font-size: 14px; color: #475569;"></p>
-            <p style="margin-top: 15px; font-size: 13px;" id="passcodeLabel">PDF Unlock Details:</p>
-            <div class="passcode" id="passcodeCode">---</div>
-            <button class="btn-close" onclick="closeModal()">Close & Open File 🚀</button>
+            <h3 style="color: #16a34a;">🎉 Payment Successful!</h3>
+            <p id="successMsg" style="margin-top: 10px; font-size: 14px; color: #475569;"></p>
+            <div class="passcode-box">Aapne yeh PDF safaltapurvak khareed li hai!</div>
+            <p style="font-size: 13px; color: #64748b;">Aap ab ise <strong>"My PDFs"</strong> section se kabhi bhi manage, view, ya download kar sakte hain.</p>
+            <button class="btn-close" onclick="closeModal('successModal')">Go to My PDFs 🚀</button>
+        </div>
+    </div>
+
+    <!-- Manage / Info Modal -->
+    <div class="modal" id="manageModal">
+        <div class="modal-content" style="text-align: left;">
+            <h3 id="manageTitle" style="color: #0f172a; margin-bottom: 10px;">PDF Details</h3>
+            <p id="manageDesc" style="font-size: 13px; color: #64748b; margin-bottom: 10px;"></p>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 10px 0;">
+            
+            <p style="font-size: 13px; font-weight: bold; color: #0f172a;">🔑 PDF Unlock Password:</p>
+            <div class="passcode-box" id="managePassword" style="text-align: center; margin: 8px 0;">---</div>
+
+            <button class="btn-unlock" id="btnViewPdf" style="margin-top: 10px;">📖 Open PDF</button>
+            <a id="btnDownloadPdf" class="btn-download" download="document.pdf">📥 Download PDF</a>
+            <button class="btn-close" onclick="closeModal('manageModal')" style="background: #cbd5e1; color: #0f172a;">Close</button>
         </div>
     </div>
 
@@ -94,7 +132,6 @@
     </footer>
 
     <script>
-        let activePdfData = null;
         let allUploadedFiles = [];
 
         // IndexedDB Database Connection
@@ -112,7 +149,7 @@
             });
         }
 
-        // Load Admin Uploaded PDFs Only
+        // Load Admin Uploaded PDFs
         async function loadAdminUploadedPDFs() {
             const grid = document.getElementById("pdfGrid");
             try {
@@ -124,6 +161,7 @@
                 request.onsuccess = () => {
                     allUploadedFiles = request.result || [];
                     renderPDFCards(allUploadedFiles);
+                    renderMyPDFs();
                 };
             } catch (err) {
                 console.log("Error loading files:", err);
@@ -131,7 +169,7 @@
             }
         }
 
-        // Render Cards Dynamically
+        // Render Main Grid Cards
         function renderPDFCards(files) {
             const grid = document.getElementById("pdfGrid");
             grid.innerHTML = "";
@@ -141,7 +179,10 @@
                 return;
             }
 
+            const purchasedIds = getPurchasedIds();
+
             files.slice().reverse().forEach(pdf => {
+                const isPurchased = purchasedIds.includes(pdf.id);
                 const card = document.createElement("div");
                 card.className = "card";
                 card.innerHTML = `
@@ -152,18 +193,18 @@
                     </div>
                     <div>
                         <div class="price ${pdf.isFree ? 'free-tag' : ''}">${pdf.isFree ? 'FREE' : 'Price: ₹' + pdf.price}</div>
-                        <button class="btn-unlock" id="btn-custom-${pdf.id}" onclick="unlockCustomPDF(${pdf.id}, '${pdf.title.replace(/'/g, "\\'")}', ${pdf.price})">
-                            ${pdf.isFree ? 'Unlock Free' : 'Pay ₹' + pdf.price + ' to Unlock'}
-                        </button>
+                        ${isPurchased ? 
+                            `<button class="btn-purchased" onclick="scrollToMyPdfs()">✅ Purchased (Go to My PDFs)</button>` : 
+                            `<button class="btn-unlock" onclick="buyPDF(${pdf.id})">${pdf.isFree ? 'Unlock Free' : 'Pay ₹' + pdf.price + ' to Unlock'}</button>`
+                        }
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Unlock PDF Handler
-        async function unlockCustomPDF(id, title, price) {
-            const btn = document.getElementById('btn-custom-' + id);
+        // Handle Purchase Action
+        async function buyPDF(id) {
             const db = await openDB();
             const tx = db.transaction("pdfFiles", "readonly");
             const store = tx.objectStore("pdfFiles");
@@ -173,26 +214,110 @@
                 const pdf = request.result;
                 if (!pdf) return;
 
-                activePdfData = pdf.fileData;
-
-                if (price === 0) {
-                    alert('🎉 Congratulations! "' + title + '" has been unlocked for FREE.');
-                    openPDFInNewTab(pdf.fileData);
-                } else {
-                    const passText = pdf.pdfPassword ? pdf.pdfPassword : "No Password Set";
-                    document.getElementById('unlockedTitle').innerText = title;
-                    document.getElementById('passcodeLabel').innerText = pdf.pdfPassword ? "🔑 PDF Password:" : "Access Code:";
-                    document.getElementById('passcodeCode').innerText = passText;
-                    document.getElementById('passcodeModal').style.display = 'flex';
+                // Save to local purchased list
+                let purchased = getPurchasedIds();
+                if (!purchased.includes(id)) {
+                    purchased.push(id);
+                    localStorage.setItem("myPurchasedPdfs", JSON.stringify(purchased));
                 }
 
-                btn.className = 'btn-read';
-                btn.innerText = '📖 Open / Read File';
-                btn.onclick = () => openPDFInNewTab(pdf.fileData);
+                // Show Success Message Popup
+                document.getElementById('successMsg').innerText = `Aapne "${pdf.title}" ka purchase complete kar liya hai!`;
+                document.getElementById('successModal').style.display = 'flex';
+
+                renderPDFCards(allUploadedFiles);
+                renderMyPDFs();
             };
         }
 
-        // Search Filter
+        // Get Purchased PDF IDs from LocalStorage
+        function getPurchasedIds() {
+            try {
+                return JSON.parse(localStorage.getItem("myPurchasedPdfs")) || [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        // Render My PDFs Panel
+        async function renderMyPDFs() {
+            const listContainer = document.getElementById("myPdfList");
+            const purchasedIds = getPurchasedIds();
+
+            if (purchasedIds.length === 0) {
+                listContainer.innerHTML = `<p class="empty-msg">Aapne abhi tak koi PDF unlock nahi ki hai.</p>`;
+                return;
+            }
+
+            const db = await openDB();
+            const tx = db.transaction("pdfFiles", "readonly");
+            const store = tx.objectStore("pdfFiles");
+
+            listContainer.innerHTML = "";
+            let foundCount = 0;
+
+            purchasedIds.forEach(id => {
+                const req = store.get(id);
+                req.onsuccess = () => {
+                    const pdf = req.result;
+                    if (pdf) {
+                        foundCount++;
+                        const item = document.createElement("div");
+                        item.className = "my-pdf-item";
+                        item.innerHTML = `
+                            <div class="my-pdf-info">
+                                <h4>📄 ${pdf.title}</h4>
+                                <p>${pdf.desc.substring(0, 60)}... • ${pdf.isFree ? 'FREE' : '₹' + pdf.price}</p>
+                            </div>
+                            <button class="btn-manage" onclick="openManageModal(${pdf.id})">⚙️ View Details & Password</button>
+                        `;
+                        listContainer.appendChild(item);
+                    }
+                };
+            });
+        }
+
+        // Open Manage Details Modal
+        async function openManageModal(id) {
+            const db = await openDB();
+            const tx = db.transaction("pdfFiles", "readonly");
+            const store = tx.objectStore("pdfFiles");
+            const req = store.get(id);
+
+            req.onsuccess = () => {
+                const pdf = req.result;
+                if (!pdf) return;
+
+                document.getElementById("manageTitle").innerText = pdf.title;
+                document.getElementById("manageDesc").innerText = pdf.desc;
+                document.getElementById("managePassword").innerText = pdf.pdfPassword ? pdf.pdfPassword : "No Password Required";
+
+                // Open Button
+                document.getElementById("btnViewPdf").onclick = () => openPDFInNewTab(pdf.fileData);
+
+                // Download Button
+                const downloadBtn = document.getElementById("btnDownloadPdf");
+                downloadBtn.href = pdf.fileData;
+                downloadBtn.download = `${pdf.title.replace(/[^a-zA-Z0-0]/g, "_")}.pdf`;
+
+                document.getElementById("manageModal").style.display = "flex";
+            };
+        }
+
+        // Scroll to My PDFs Section
+        function scrollToMyPdfs() {
+            document.getElementById("myPdfsSection").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Close Modals
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'successModal') {
+                scrollToMyPdfs();
+            }
+        }
+
+        // Filter PDFs
         function filterPDFs() {
             const query = document.getElementById("searchInput").value.toLowerCase();
             const filtered = allUploadedFiles.filter(pdf => 
@@ -201,7 +326,7 @@
             renderPDFCards(filtered);
         }
 
-        // Open Base64 PDF in New Tab
+        // Open PDF in New Tab
         function openPDFInNewTab(base64Data) {
             if (!base64Data) return;
             const blob = dataURLtoBlob(base64Data);
@@ -216,13 +341,6 @@
                 u8arr[n] = bstr.charCodeAt(n);
             }
             return new Blob([u8arr], {type:mime});
-        }
-
-        function closeModal() {
-            document.getElementById('passcodeModal').style.display = 'none';
-            if (activePdfData) {
-                openPDFInNewTab(activePdfData);
-            }
         }
 
         window.addEventListener("DOMContentLoaded", loadAdminUploadedPDFs);
