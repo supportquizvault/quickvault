@@ -133,6 +133,28 @@
         <p>© 2026 Quiz Vault. All rights reserved. <span id="footerAdminContainer" style="display: none;">| <a href="admin.html">Admin Panel ⚙️</a></span></p>
     </footer>
 
+    <!-- Firebase SDK Setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        // Aapka Firebase Configuration Object
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKThjP8KihJsLdqMN8LbG2TOIVzRFaZLQ",
+            authDomain: "quizvault-2380c.firebaseapp.com",
+            projectId: "quizvault-2380c",
+            storageBucket: "quizvault-2380c.firebasestorage.app",
+            messagingSenderId: "41706191360",
+            appId: "1:41706191360:web:d6a7178baae8d51e0eb6e5",
+            measurementId: "G-CVNQY2QJPQ"
+        };
+
+        // Firebase & Analytics Initialize
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+
+    <!-- Main Application Logic Script -->
     <script>
         const ADMIN_EMAIL = "support.quizvault@gmail.com";
         let allUploadedFiles = [];
