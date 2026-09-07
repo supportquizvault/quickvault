@@ -20,6 +20,8 @@
         /* Header Card */
         .header-card { background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .header-card h1 { font-size: 22px; color: #0f172a; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-home { padding: 8px 16px; background: #2563eb; color: white; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; }
         .btn-logout { padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
         /* Upload Card */
@@ -31,16 +33,16 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
         .btn-submit { width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
-        /* Manage PDFs Section */
-        .manage-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* Manage Section */
+        .manage-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .manage-card h2 { margin-bottom: 15px; font-size: 18px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
         
-        /* PDF List Item */
-        .pdf-list { display: flex; flex-direction: column; gap: 12px; }
-        .pdf-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; }
-        .pdf-info h4 { font-size: 15px; color: #1e293b; margin-bottom: 4px; }
-        .pdf-info p { font-size: 12px; color: #64748b; }
-        .pdf-actions { display: flex; gap: 8px; align-items: center; }
+        /* List Items */
+        .item-list { display: flex; flex-direction: column; gap: 12px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; }
+        .item-info h4 { font-size: 15px; color: #1e293b; margin-bottom: 4px; }
+        .item-info p { font-size: 12px; color: #64748b; }
+        .item-actions { display: flex; gap: 8px; align-items: center; }
         .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
         .badge-free { background: #dcfce7; color: #15803d; }
         .badge-paid { background: #fef3c7; color: #b45309; }
@@ -68,12 +70,15 @@
         <!-- Header -->
         <div class="header-card">
             <h1>⚙️ Admin Dashboard</h1>
-            <button class="btn-logout" onclick="logout()">🔒 Logout</button>
+            <div class="header-actions">
+                <a href="index.html" class="btn-home">🏠 Home</a>
+                <button class="btn-logout" onclick="logout()">🔒 Logout</button>
+            </div>
         </div>
 
-        <!-- Section 1: Upload Form -->
+        <!-- Section 1: Upload PDF Form -->
         <div class="upload-card">
-            <h2>📤 Upload New PDF / Quiz</h2>
+            <h2>📤 Upload New PDF Document</h2>
             <form id="uploadForm">
                 <div class="form-group">
                     <label>PDF Title</label>
@@ -84,7 +89,7 @@
                     <textarea id="pdfDesc" rows="2" placeholder="Description details..." required></textarea>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="isFree" onchange="togglePriceInput(this)">
+                    <input type="checkbox" id="isFree" onchange="togglePriceInput(this, 'priceGroup', 'pdfPrice')">
                     <label for="isFree" style="margin: 0; cursor: pointer;">Is this PDF Free?</label>
                 </div>
                 <div class="form-group" id="priceGroup">
@@ -104,11 +109,52 @@
             </form>
         </div>
 
-        <!-- Section 2: Manage & Delete PDFs -->
+        <!-- Section 2: Add Live Quiz Form -->
+        <div class="upload-card">
+            <h2>📢 Create New Live Quiz</h2>
+            <form id="quizForm">
+                <div class="form-group">
+                    <label>Live Quiz Title</label>
+                    <input type="text" id="quizTitle" placeholder="e.g. Live Mega Mock Test - SSC CGL" required>
+                </div>
+                <div class="form-group">
+                    <label>Quiz Description / Timings</label>
+                    <textarea id="quizDesc" rows="2" placeholder="Quiz details aur timing..." required></textarea>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="quizIsFree" onchange="togglePriceInput(this, 'quizPriceGroup', 'quizPrice')">
+                    <label for="quizIsFree" style="margin: 0; cursor: pointer;">Is this Live Quiz Free?</label>
+                </div>
+                <div class="form-group" id="quizPriceGroup">
+                    <label>Price (₹)</label>
+                    <input type="number" id="quizPrice" placeholder="49" value="49">
+                </div>
+                <div class="form-group">
+                    <label>Live Quiz Join ID / Access Code</label>
+                    <input type="text" id="quizIdCode" placeholder="e.g. QUIZ-LIVE-9988" required>
+                </div>
+                <div class="form-group">
+                    <label>Live Quiz Password / Secret Key</label>
+                    <input type="text" id="quizPassword" placeholder="e.g. test@1234" required>
+                    <small style="color: #64748b; font-size: 11px;">Payment ke baad client ko yeh ID aur Password access ke liye milega.</small>
+                </div>
+                <button type="submit" class="btn-submit" style="background: #2563eb;">🚀 Publish Live Quiz</button>
+            </form>
+        </div>
+
+        <!-- Section 3: Manage Uploaded PDFs -->
         <div class="manage-card">
             <h2>📁 Manage Uploaded PDFs</h2>
-            <div class="pdf-list" id="uploadedPdfList">
+            <div class="item-list" id="uploadedPdfList">
                 <p class="empty-msg">Loading PDFs...</p>
+            </div>
+        </div>
+
+        <!-- Section 4: Manage Live Quizzes -->
+        <div class="manage-card">
+            <h2>📋 Manage Live Quizzes</h2>
+            <div class="item-list" id="uploadedQuizList">
+                <p class="empty-msg">Loading Quizzes...</p>
             </div>
         </div>
 
@@ -134,7 +180,8 @@
         function showAdminPanel() {
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("adminContent").style.display = "block";
-            loadManagePDFs(); // Load PDFs when admin logs in
+            loadManagePDFs();
+            loadManageQuizzes();
         }
 
         function logout() {
@@ -142,8 +189,8 @@
             location.reload();
         }
 
-        function togglePriceInput(checkbox) {
-            document.getElementById("priceGroup").style.display = checkbox.checked ? "none" : "block";
+        function togglePriceInput(checkbox, groupId, inputId) {
+            document.getElementById(groupId).style.display = checkbox.checked ? "none" : "block";
         }
 
         window.onload = function() {
@@ -152,14 +199,17 @@
             } catch(e) {}
         };
 
-        // IndexedDB Connection
+        // IndexedDB Connection (Version 2 taaki quizFiles bhi store ho sake)
         function openDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open("QuizVaultDB", 1);
+                const request = indexedDB.open("QuizVaultDB", 2);
                 request.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains("pdfFiles")) {
                         db.createObjectStore("pdfFiles", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("quizFiles")) {
+                        db.createObjectStore("quizFiles", { keyPath: "id", autoIncrement: true });
                     }
                 };
                 request.onsuccess = (e) => resolve(e.target.result);
@@ -170,7 +220,6 @@
         // Upload PDF Handler
         document.getElementById("uploadForm").addEventListener("submit", async function(e) {
             e.preventDefault();
-            
             const title = document.getElementById("pdfTitle").value;
             const desc = document.getElementById("pdfDesc").value;
             const isFree = document.getElementById("isFree").checked;
@@ -200,12 +249,42 @@
                 tx.oncomplete = () => {
                     alert("🎉 PDF Uploaded Successfully!");
                     document.getElementById("uploadForm").reset();
-                    loadManagePDFs(); // Refresh list after upload
+                    loadManagePDFs();
                 };
             };
         });
 
-        // Load All Uploaded PDFs for Management
+        // Upload Quiz Handler
+        document.getElementById("quizForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const title = document.getElementById("quizTitle").value;
+            const desc = document.getElementById("quizDesc").value;
+            const isFree = document.getElementById("quizIsFree").checked;
+            const price = isFree ? 0 : document.getElementById("quizPrice").value;
+            const quizIdCode = document.getElementById("quizIdCode").value.trim();
+            const quizPassword = document.getElementById("quizPassword").value.trim();
+
+            const db = await openDB();
+            const tx = db.transaction("quizFiles", "readwrite");
+            const store = tx.objectStore("quizFiles");
+
+            store.add({
+                title: title,
+                desc: desc,
+                isFree: isFree,
+                price: price,
+                quizIdCode: quizIdCode,
+                quizPassword: quizPassword
+            });
+
+            tx.oncomplete = () => {
+                alert("🎉 Live Quiz Published Successfully!");
+                document.getElementById("quizForm").reset();
+                loadManageQuizzes();
+            };
+        });
+
+        // Load Manage PDFs
         async function loadManagePDFs() {
             const listContainer = document.getElementById("uploadedPdfList");
             try {
@@ -224,17 +303,15 @@
                     listContainer.innerHTML = "";
                     pdfs.forEach(pdf => {
                         const item = document.createElement("div");
-                        item.className = "pdf-item";
+                        item.className = "item-row";
                         item.innerHTML = `
-                            <div class="pdf-info">
+                            <div class="item-info">
                                 <h4>📄 ${pdf.title}</h4>
-                                <p>${pdf.desc.substring(0, 50)}... ${pdf.pdfPassword ? '• Pass: <strong>' + pdf.pdfPassword + '</strong>' : ''}</p>
+                                <p>${pdf.desc.substring(0, 40)}... ${pdf.pdfPassword ? '• Pass: <strong>' + pdf.pdfPassword + '</strong>' : ''}</p>
                             </div>
-                            <div class="pdf-actions">
-                                <span class="badge ${pdf.isFree ? 'badge-free' : 'badge-paid'}">
-                                    ${pdf.isFree ? 'FREE' : '₹' + pdf.price}
-                                </span>
-                                <button class="btn-delete" onclick="deletePDF(${pdf.id})">🗑️ Delete</button>
+                            <div class="item-actions">
+                                <span class="badge ${pdf.isFree ? 'badge-free' : 'badge-paid'}">${pdf.isFree ? 'FREE' : '₹' + pdf.price}</span>
+                                <button class="btn-delete" onclick="deleteItem('pdfFiles', ${pdf.id}, loadManagePDFs)">🗑️ Delete</button>
                             </div>
                         `;
                         listContainer.prepend(item);
@@ -245,17 +322,55 @@
             }
         }
 
-        // Delete PDF Handler
-        async function deletePDF(id) {
-            if (confirm("Kya aap sach me is PDF ko delete karna chahte hain? Yeh homepage se bhi hat jayegi.")) {
+        // Load Manage Quizzes
+        async function loadManageQuizzes() {
+            const listContainer = document.getElementById("uploadedQuizList");
+            try {
                 const db = await openDB();
-                const tx = db.transaction("pdfFiles", "readwrite");
-                const store = tx.objectStore("pdfFiles");
+                const tx = db.transaction("quizFiles", "readonly");
+                const store = tx.objectStore("quizFiles");
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const quizzes = request.result;
+                    if (!quizzes || quizzes.length === 0) {
+                        listContainer.innerHTML = `<p class="empty-msg">Abhi tak koi live quiz add nahi ki gayi hai.</p>`;
+                        return;
+                    }
+
+                    listContainer.innerHTML = "";
+                    quizzes.forEach(quiz => {
+                        const item = document.createElement("div");
+                        item.className = "item-row";
+                        item.innerHTML = `
+                            <div class="item-info">
+                                <h4>📢 ${quiz.title}</h4>
+                                <p>ID: <strong>${quiz.quizIdCode}</strong> | Pass: <strong>${quiz.quizPassword}</strong></p>
+                            </div>
+                            <div class="item-actions">
+                                <span class="badge ${quiz.isFree ? 'badge-free' : 'badge-paid'}">${quiz.isFree ? 'FREE' : '₹' + quiz.price}</span>
+                                <button class="btn-delete" onclick="deleteItem('quizFiles', ${quiz.id}, loadManageQuizzes)">🗑️ Delete</button>
+                            </div>
+                        `;
+                        listContainer.prepend(item);
+                    });
+                };
+            } catch (err) {
+                listContainer.innerHTML = `<p class="empty-msg">Quizzes load karne me error aaya.</p>`;
+            }
+        }
+
+        // Delete Item Handler
+        async function deleteItem(storeName, id, callback) {
+            if (confirm("Kya aap sach me ise delete karna chahte hain?")) {
+                const db = await openDB();
+                const tx = db.transaction(storeName, "readwrite");
+                const store = tx.objectStore(storeName);
                 store.delete(id);
 
                 tx.oncomplete = () => {
-                    alert("🗑️ PDF Delete ho gayi hai!");
-                    loadManagePDFs(); // Refresh list after delete
+                    alert("🗑️ Delete ho gaya hai!");
+                    callback();
                 };
             }
         }
